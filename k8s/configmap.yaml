@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prept-config
+  namespace: prept
+data:
+  DATABASE_URL: "jdbc:postgresql://prept-postgres:5432/prepttracker"
+  DATABASE_USER: "preptuser"
+  CORS_ORIGINS: "http://localhost:3000"
+  MAIL_HOST: "prept-mailpit"
+  MAIL_PORT: "1025"

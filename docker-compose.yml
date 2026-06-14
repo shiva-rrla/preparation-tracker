@@ -1,0 +1,84 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: prept-postgres
+    environment:
+      POSTGRES_DB: prepttracker
+      POSTGRES_USER: preptuser
+      POSTGRES_PASSWORD: preptpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U preptuser -d prepttracker"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - prept-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: prept-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@prept.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - prept-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: prept-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DATABASE_URL: jdbc:postgresql://postgres:5432/prepttracker
+      DATABASE_USER: preptuser
+      DATABASE_PASSWORD: preptpass
+      JWT_SECRET: ${JWT_SECRET:-5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437}
+      CORS_ORIGINS: http://localhost:3000,http://prept-frontend:80
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - prept-network
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: prept-mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - prept-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: prept-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - prept-network
+
+volumes:
+  postgres_data:
+
+networks:
+  prept-network:
+    driver: bridge
