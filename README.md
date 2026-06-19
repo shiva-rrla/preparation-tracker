@@ -212,6 +212,8 @@ GitHub Actions workflow provided in `.github/workflows/ci.yml`:
 - Validates TypeScript compilation
 - Builds Docker images
 
+## dummy changes
+
 ## License
 
 MIT
