@@ -217,3 +217,5 @@ GitHub Actions workflow provided in `.github/workflows/ci.yml`:
 ## License
 
 MIT
+
+## Checking
